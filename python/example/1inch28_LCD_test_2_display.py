@@ -24,6 +24,18 @@ bus = 0
 device = 0
 logging.basicConfig(level=logging.DEBUG)
 
+def numofframe(gifpath):
+
+    gif = Image.open(gifpath)
+
+    # Получение списка кадров GIF
+    frames = [gif.copy() for frame in ImageSequence.Iterator(gif)]
+    num_frames = len(frames)
+
+    # Вывод количества кадров
+    print(f'Количество кадров в GIF: {num_frames}')
+    return frames
+
 try:
     # display with hardware SPI:
     ''' Warning!!!Don't  creation of multiple displayer objects!!! '''
@@ -38,41 +50,54 @@ try:
     # Create blank image for drawing.
     image1 = Image.new("RGB", (disp.width, disp.height), "BLACK")
     draw = ImageDraw.Draw(image1)
-    gif_paths = [
-    '../pic/Adam-Black-eyes-злится.gif',
-    '../pic/Adam Black eyes моргает.gif',
-    '../pic/Adam-Black-eyes-смотрит-влево-и-прямо.gif',
-    '../pic/ROBOT ADAM EYES/Влюблен/Adam-Black-eyes-влюблен.gif',
-    '../pic/ROBOT ADAM EYES/Восхищен/Adam-Black-eyes-восхищен.gif',
-    '../pic/ROBOT ADAM EYES/Злится/Adam-Black-eyes-злится.gif',
-    '../pic/ROBOT ADAM EYES/Плачет/Adam-Black-eyes-плачет.gif',
-    '../pic/ROBOT ADAM EYES/Радуется/Adam-Black-eyes-радуется.gif',
-    '../pic/ROBOT ADAM EYES/Смущен/RIGHT/Adam-Black-eyes-смущен-RIGHT.gif',
-    '../pic/ROBOT ADAM EYES/Adam-Black-eyes-расширяются-зрачки.gif',
-    '../pic/ROBOT ADAM EYES/Adam-Black-eyes-подмигивает-RIGHT.gif',
-    '../pic/ROBOT ADAM EYES/Adam-Black-eyes-смеется-RIGHT.gif',
-    '../pic/ROBOT ADAM EYES/ANIME EYES/Adam-Anime-eyes-смотрит-по-сторонам.gif',
-    '../pic/ROBOT ADAM EYES/CARTOON BLUE EYES/Adam-Cartoon-Blue-eyes-моргает.gif'
+
+    gif_paths_R = [
+        '../pic/ROBOT ADAM EYES/Adam Black eyes СТАТИЧНЫЙ ГЛАЗ.png',
+        '../pic/ROBOT ADAM EYES/Adam-Black-eyes-смеется-RIGHT.gif',
+        '../pic/ROBOT ADAM EYES/Adam-Black-eyes-расширяются-зрачки.gif',
+        '../pic/ROBOT ADAM EYES/Adam-Black-eyes-смущен-RIGHT.gif',
+        '../pic/ROBOT ADAM EYES/Adam-Black-eyes-подмигивает-RIGHT.gif',
+        '../pic/ROBOT ADAM EYES/Adam-Black-eyes-расширяются-зрачки.gif',
+        '../pic/ROBOT ADAM EYES/Adam-Black-eyes-смотрит-по-сторонам.gif',
+        '../pic/ROBOT ADAM EYES/Adam Black eyes СТАТИЧНЫЙ ГЛАЗ.png',
     # Add more GIF file paths as needed
     ]
 
-    for gif_path in gif_paths:
-        gif = Image.open(gif_path)
+    gif_paths_L = [
+        '../pic/ROBOT ADAM EYES/Adam Black eyes СТАТИЧНЫЙ ГЛАЗ.png',
+        '../pic/ROBOT ADAM EYES/Adam-Black-eyes-смеется-LEFT.gif',
+        '../pic/ROBOT ADAM EYES/Adam-Black-eyes-подмигивает-LEFT.gif',
+        '../pic/ROBOT ADAM EYES/Adam-Black-eyes-смущен-LEFT.gif',
+        '../pic/ROBOT ADAM EYES/Adam-Black-eyes-расширяются-зрачки.gif',
+        '../pic/ROBOT ADAM EYES/Adam-Black-eyes-расширяются-зрачки.gif',
+        '../pic/ROBOT ADAM EYES/Adam-Black-eyes-смотрит-по-сторонам.gif',
+        '../pic/ROBOT ADAM EYES/Adam Black eyes СТАТИЧНЫЙ ГЛАЗ.png',
+       # Add more GIF file paths as needed
+    ]
 
-        # Получение списка кадров GIF
-        frames = [gif.copy() for frame in ImageSequence.Iterator(gif)]
-        num_frames = len(frames)
+    for gif_path_R, gif_path_L in zip(gif_paths_R, gif_paths_L):
+        frames_R = numofframe(gif_path_R)
+        frames_L = numofframe(gif_path_L)
+        time.sleep(2.0)
 
-        # Вывод количества кадров
-        print(f'Количество кадров в GIF: {num_frames}')
+        for frame_L, frame_R in zip(frames_L, frames_R):
+            GPIO.output(23, 1)  # set GPIO24 to 1/GPIO.HIGH/True
+            GPIO.output(24, 0)  # set GPIO24 to 1/GPIO.HIGH/True
+            frame_rgb_L = frame_L.convert('RGB')
+            disp.ShowImage(frame_rgb_L)
 
-        for frame in frames:
-            frame_rgb = frame.convert('RGB')
-            disp.ShowImage(frame_rgb)
-            time.sleep(0.15)
+            frame_rgb_R = frame_R.convert('RGB')
+            GPIO.output(23, 0)  # set GPIO24 to 1/GPIO.HIGH/True
+            GPIO.output(24, 1)  # set GPIO24 to 1/GPIO.HIGH/True
+            disp.ShowImage(frame_rgb_R)
+            time.sleep(0.05)
 
-        # GPIO.output(24, 1)  # set GPIO24 to 1/GPIO.HIGH/True
-        # disp.clear()
+    time.sleep(3.0)
+
+    GPIO.output(23, 0)  # set GPIO24 to 1/GPIO.HIGH/True
+    GPIO.output(24, 0)  # set GPIO24 to 1/GPIO.HIGH/True
+
+    disp.clear()
 
     disp.module_exit()
     logging.info("quit:")
@@ -83,7 +108,3 @@ except KeyboardInterrupt:
     disp.module_exit()
     logging.info("quit:")
     exit()
-
-
-
-
